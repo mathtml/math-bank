@@ -5,7 +5,7 @@ const nextConfig = {
     return [
       {
         source: '/:path*',
-        destination: '/pages/:path*', // Remap to /app/pages path
+        destination: '/pages/:path*', 
       },
     ];
   },
