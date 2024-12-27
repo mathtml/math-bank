@@ -1,14 +1,42 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model currencies {
+  id             Int              @id @default(autoincrement()) @db.UnsignedInt
+  code           String           @db.VarChar(10)
+  name           String?          @db.VarChar(100)
+  symbol         String?          @db.VarChar(10)
+  wallet_clients wallet_clients[]
+}
+
+model users_clients {
+  id             Int              @id @default(autoincrement()) @db.UnsignedInt
+  name           String           @db.VarChar(255)
+  fictitiousname String?          @db.VarChar(255)
+  cpf            String           @db.VarChar(255)
+  e_mail         String           @map("e-mail") @db.VarChar(255)
+  password       String           @db.VarChar(255)
+  dateborn       DateTime         @db.Date
+  createdAt      DateTime         @default(now()) @db.Timestamp(0)
+  updateAt       DateTime?        @db.Timestamp(0)
+  wallet_clients wallet_clients[]
+}
+
+model wallet_clients {
+  id            Int           @id @default(autoincrement())
+  user_id       Int           @db.UnsignedInt
+  currency_id   Int?          @db.UnsignedInt
+  balance       Decimal?      @default(0.00000000) @db.Decimal(20, 8)
+  created_at    DateTime?     @default(now()) @db.Timestamp(0)
+  users_clients users_clients @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "wallet_clients_ibfk_1")
+  currencies    currencies?   @relation(fields: [currency_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "wallet_clients_ibfk_2")
+
+  @@index([currency_id], map: "currency_id")
+  @@index([user_id], map: "user_id")
 }
