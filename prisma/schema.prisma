@@ -19,8 +19,8 @@ model users_clients {
   id             Int              @id @default(autoincrement()) @db.UnsignedInt
   name           String           @db.VarChar(255)
   fictitiousname String?          @db.VarChar(255)
-  cpf            String           @db.VarChar(255)
-  e_mail         String           @map("e-mail") @db.VarChar(255)
+  cpf            String           @unique(map: "THREE TIMES") @db.VarChar(255)
+  e_mail         String           @unique(map: "SECONDARY") @map("e-mail") @db.VarChar(255)
   password       String           @db.VarChar(255)
   dateborn       DateTime         @db.Date
   createdAt      DateTime         @default(now()) @db.Timestamp(0)
@@ -32,7 +32,7 @@ model wallet_clients {
   id            Int           @id @default(autoincrement())
   user_id       Int           @db.UnsignedInt
   currency_id   Int?          @db.UnsignedInt
-  balance       Decimal?      @default(0.00000000) @db.Decimal(20, 8)
+  balance       Decimal?      @db.Decimal(10, 2)
   created_at    DateTime?     @default(now()) @db.Timestamp(0)
   users_clients users_clients @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "wallet_clients_ibfk_1")
   currencies    currencies?   @relation(fields: [currency_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "wallet_clients_ibfk_2")
