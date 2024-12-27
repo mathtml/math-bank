@@ -1,7 +1,8 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client'
+import React, { useState, useEffect } from "react";
 import { TextField, Button, Box, Typography, Alert } from "@mui/material";
 import { useRouter } from "next/navigation";
+import ResponseModal from "@/components/modalResponse";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,9 @@ const Register = () => {
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);  // Controla a visibilidade do modal
+  const [modalMessage, setModalMessage] = useState("");  // Armazena a mensagem do modal
+  const [isError, setIsError] = useState(false); // Controla se é erro ou sucesso
   const router = useRouter();
 
   useEffect(() => {
@@ -52,12 +56,22 @@ const Register = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Erro ao registrar.");
+        // Verifica se o backend enviou uma chave de erro e mostra a mensagem
+        setIsError(true);
+        setModalMessage(result.error || "Erro ao registrar.");
+      } else {
+        // Caso de sucesso, mostra a mensagem de sucesso
+        setIsError(false);
+        setModalMessage(result.message || "Registro realizado com sucesso!");
       }
 
-      setSuccess(result.message);
+      setModalOpen(true); // Abre o modal com a mensagem
+
     } catch (err: any) {
-      setError(err.message);
+      // Em caso de erro, exibe uma mensagem genérica
+      setIsError(true);
+      setModalMessage("Ocorreu um erro durante a operação.");
+      setModalOpen(true);
     }
   };
 
@@ -75,8 +89,6 @@ const Register = () => {
       <Typography variant="h4" gutterBottom>
         Registro
       </Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">{success}</Alert>}
       <Box
         component="form"
         sx={{
@@ -151,6 +163,15 @@ const Register = () => {
           Voltar
         </Button>
       </Box>
+
+      {/* Modal de resposta */}
+      <ResponseModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={isError ? "Erro" : "Sucesso"}
+        message={modalMessage}
+        isError={isError} // Passa o estado de erro ou sucesso
+      />
     </Box>
   );
 };
