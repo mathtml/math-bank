@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import ResponseModal from "@/components/modalResponse";
 import { useRouter } from "next/navigation";
-import nookies from 'nookies'; 
 
 export default function Home() {
   const router = useRouter();
@@ -26,37 +25,41 @@ export default function Home() {
           password,   
         }),
       });
-
-      const data = await response.json();
-
+  
+      // Verificando o status da resposta
+      console.log('Status da resposta:', response.status);
+  
       if (response.ok) {
-        setIsError(false);
-        setModalMessage("Login realizado com sucesso!");
-
-        if (data.token) {
-          nookies.set(null, 'auth_token', data.token, {
-            path: '/',         
-            maxAge: 60 * 60,  
-            httpOnly: true,     
-            secure: process.env.NODE_ENV === 'production', 
-          });
+        const data = await response.json();
+        console.log('Dados retornados:', data);
+  
+        if (data.token && data.id) {
+          setIsError(false);
+          setModalMessage("Login realizado com sucesso!");
+  
+          // Salvando token e id separadamente
+          localStorage.setItem('auth_token', data.token); 
+          localStorage.setItem('auth_id', data.id); 
+  
+          // Redireciona para o dashboard
+          router.push("/dashboard");
+        } else {
+          setIsError(true);
+          setModalMessage("Token ou ID não encontrados no retorno.");
+          setModalOpen(true);
         }
-
-        router.push("/dashboard"); 
       } else {
-       
         setIsError(true);
-        setModalMessage(data.message || "Ocorreu um erro desconhecido.");
+        setModalMessage("Erro na autenticação.");
+        setModalOpen(true);
       }
     } catch (error) {
       setIsError(true);
-      setModalMessage("Erro na conexão com o servidor.");
-    }
-
-    if (modalMessage !== "Login realizado com sucesso!") {
-      setModalOpen(false); 
+      setModalMessage("Erro no servidor.");
+      setModalOpen(true);
     }
   };
+  
 
   const navigateToRegister = () => {
     router.push("/register");
