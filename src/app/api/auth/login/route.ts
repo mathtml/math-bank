@@ -1,16 +1,14 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Ajuste o caminho conforme necessário
+import { prisma } from "@/lib/prisma"; 
 
-const SECRET_KEY = process.env.JWT_SECRET_KEY || "your-secret-key"; // Defina sua chave secreta para o JWT
+const SECRET_KEY = process.env.JWT_SECRET_KEY || "key-not-found";
 
 export async function POST(req: Request) {
   try {
-    // Parseia o corpo da requisição
     const { cpf, password } = await req.json();
 
-    // Validação dos parâmetros
     if (!cpf) {
       return NextResponse.json(
         { message: "CPF é obrigatório" },
@@ -24,14 +22,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verifica se o usuário existe no banco com CPF
     const user = await prisma.users_clients.findUnique({
       where: {
-        cpf: cpf, // Busca pelo CPF
+        cpf: cpf, 
       },
     });
 
-    // Verifica se o usuário foi encontrado
     if (!user) {
       return NextResponse.json(
         { message: "CPF incorreto" },
@@ -39,7 +35,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verifica se a senha está correta usando bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -49,7 +44,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Geração do token JWT com payload adequado
     const tokenPayload = {
       id: user.id,
       cpf: user.cpf,
@@ -57,9 +51,12 @@ export async function POST(req: Request) {
 
     const token = jwt.sign(tokenPayload, SECRET_KEY, { expiresIn: "1h" });
 
-    // Retorna o token e a mensagem de sucesso
     return NextResponse.json(
-      { token, message: "Login realizado com sucesso!" },
+      { 
+        token, 
+        id: user.id, // Enviando o ID do usuário também
+        message: "Login realizado com sucesso!" 
+      },
       { status: 200 }
     );
   } catch (error) {
